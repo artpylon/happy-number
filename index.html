@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Happy Number</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+     <link rel="shortcut icon" type="image/x-icon" href="http://i.imgur.com/jNTFlYF.png">
+
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+  </head>
+
+  <body class="container-fluid" style="background-color:#B5F1E6">
+    <div class="game-over" style="display:none">
+      <h2>You won! Great Job!</h2>
+      <button id="play-again" type="button" class="btn btn-default">Play Again</button>
+    </div>
+
+    <div class="game-active">
+      <h1>Find the Happy Number!</h1>
+      <p>For inputs A, B and C, the numbers are "happy" if this statement is true:
+
+        ABC = A! + B! + C! where A > 0, B >= 0, C >= 0
+      </p>
+      <p> Notes:</p>
+      <ul>
+        <li>ABC is NOT A*B*C. Rather, A, B, and C are digits that make up the number ABC</li>
+        <li>In math, the factorial of a non-negative integer n, denoted by n!, is the product of all positive integers less than or equal to n. For example: 5! = 5 x 4 x 3 x 2 x 1 = 120.
+        <li>1! = 1 and 0! = 1.</li>
+      </ul>
+      <form id="nums">
+        <p>Time:<span class="timer">
+        </span></p>
+        <p>Tries:<span class="tries">0
+        </span></p>
+        <div class="form-group">
+          <label>A:</label>
+          <input type="number" class="form-control" id="a" min="0" required>
+        </div>
+
+        <div class="form-group">
+          <label>B:</label>
+          <input type="number" class="form-control" id="b" min="0" required>
+        </div>
+
+        <div class="form-group">
+          <label>C:</label>
+          <input type="number" class="form-control" id="c" min="0" required>
+        </div>
+
+        <button type="submit" class="btn btn-default">Submit</button>
+        <button id="give-up" type="button" class="btn btn-default">Give up!</button>
+      </form>
+    </div>
+    <div style="height:400px" class="modal result-modal" role="dialog">
+      <div class="modal-dialog result-modal">
+      <div class="col-sm-2"></div>
+        <div class="modal-content col-sm-8">
+
+          <div class="modal-header">
+            <h3 class="modal-title">Your Results:</h3>
+          </div>
+
+          <div class="form-group">
+            <p class="result"></p>
+          </div>
+          <button style="background-color:black, color: white, margin-bottom:20px" type="button" class="btn btn-default close-modal" data-dismiss="modal">Close</button>
+
+        </div>
+      <div class="col-sm-2"></div>
+      </div>
+    </div>
+    <script>
+      // counter for attempts to solve the problem
+      var tries = 0
+      // click handlers for close, give up and form submits
+      $('.close-modal').on('click', function () {
+        $('.result-modal').hide()
+      })
+      $('#give-up').on('click', openGiveUp)
+
+      // event handler for ABC form submit
+      $('#nums').submit(function() {
+        event.preventDefault()
+        var $inputs = $('#nums :input')
+
+        var values = []
+        $inputs.each(function() {
+            values.push(Number($(this).val()))
+        })
+
+        if (checkAnswer(values)) {
+          start = new Date
+          openModalCorrect()
+          tries = 0
+          endGame()
+        } else {
+          tries++
+          openModalIncorrect()
+        }
+        $('.tries').text(tries)
+        $('#nums').trigger('reset')
+      })
+
+      // open modal functions that populate appropriate text
+      function openModalIncorrect () {
+        $('.result-modal').show()
+        $('.result').text('Sorry, wrong answer. Your Score: ' + score())
+      }
+
+      function openModalCorrect () {
+        $('.result-modal').show()
+        $('.result').text('Correct! Your Score: ' + score())
+      }
+
+      function openGiveUp () {
+        $('.result-modal').show()
+        $('.result').text('Hard right?? No worries, the correct answer is ' + findAnswer())
+
+      }
+
+      // timer
+      var start = new Date;
+
+      setInterval(function() {
+        $('.timer').text(Math.floor((new Date - start) / 1000));
+        }, 1000)
+
+      // function that determins score based on time and tries
+      function score() {
+        var time = $('.timer').text()
+        var score = 100 - tries*5 - time/30
+        if (tries === 0) {
+          return 100
+        } else if (score > 0) {
+          return Math.floor(score)
+        } else return 0
+      }
+
+      // function to find the factorial of each submitted number
+      function factorial(num) {
+        var result
+        var arr = []
+
+        // create an array containing range of numbers needed for factorial of input
+        for (var i = num; i > 0; i--) {
+          arr.push(i)
+        }
+
+        // return the factorial, if the number was 0, return 1, otherwise reduce the array to its factorial
+        if (num === 0) {
+          return result += 1
+        } else if (num > 0) {
+          result = arr.reduce(function (prev, curr) {
+            return prev * curr
+          })
+        }
+        return result
+      }
+
+      // function to check if the numbers sumbmitted are happy
+      function checkAnswer(values) {
+
+        var sum = factorial(Number(values[0])) + factorial(Number(values[1])) + factorial(Number(values[2]))
+        var abc = "" + values[0] + values[1] + values[2]
+
+        if (sum.toString() === abc) {
+          return true
+        } else {
+          return false
+        }
+      }
+
+      function findAnswer () {
+
+        for (var i = 0; i < 999; i++) {
+          arr = ("" + i).split("")
+
+          if (i < 10) {
+            arr.unshift('0', '0')
+          } else if (i < 100) {
+            arr.unshift('0')
+          }
+
+          if (checkAnswer(arr)) {
+            return i
+          }
+        }
+      }
+
+      // end the game
+      function endGame() {
+        $('.game-active').toggle('display')
+        $('.game-over').toggle('display')
+
+      }
+
+      $('#play-again').on('click', function(){
+        $('.game-over').toggle('display')
+        $('.game-active').toggle('display')
+      })
+    </script>
+  </body>
+
+
+</html>
